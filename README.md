@@ -1,4 +1,4 @@
-# Reconocimiento Facial con PCA (Eigenfaces)
+# Reconocimiento de imágenes con PCA (Eigenfaces)
 
 Este proyecto implementa un sistema de reconocimiento facial utilizando el Análisis de Componentes Principales (PCA) basado en la técnica de *Autovalores y Autovectores*. El sistema cuenta con una interfaz web interactiva que permite proyectar, reconstruir e identificar imágenes nuevas midiendo su distancia en el subespacio generado.
 
