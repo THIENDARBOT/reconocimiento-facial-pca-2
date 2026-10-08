@@ -54,7 +54,7 @@ Para garantizar la viabilidad matemática y el rendimiento computacional del mod
 * **Construcción de la Matriz X:** Cada imagen de 64x64 se aplana en un vector fila de 4096 variables. Al apilar las 36 imágenes de entrenamiento, se conforma la matriz de datos estructurada **X pertenece a R 36 x 4096**.
 * **Cálculo de Componentes Principales:**
 
-  * Se utiliza el método de la **Matriz de Gram** para calcular los valores y vectores propios de manera eficiente (operando sobre una matriz de 39 x 39 en lugar de 4096 x 4096).
+  * Se utiliza el método de la **Matriz de Gram** para calcular los valores y vectores propios de manera eficiente (operando sobre una matriz de 36 x 36 en lugar de 4096 x 4096).
   * Para evitar problemas de inestabilidad, se aplica un filtro de ruido numérico que descarta cualquier valor propio menor a 10^-8.
-  * Gracias a este filtrado y a la dependencia lineal natural de los rostros, el sistema determina dinámicamente un máximo de **33 componentes principales efectivos (k = 33)** que capturan el 100% de la varianza útil del conjunto de datos.
+  * Gracias a este filtrado y a la dependencia lineal natural de los rostros, el sistema determina dinámicamente un máximo de **35 componentes principales efectivos (k = 35)** que capturan el 100% de la varianza útil del conjunto de datos.
 
