@@ -1,93 +1,46 @@
-import streamlit as st
+from flask import Flask, render_template, request, jsonify
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from sklearn.neighbors import KNeighborsClassifier
-from PIL import Image
+import pca
+import io_datos
 
-# Configuración de la página web
-st.set_page_config(page_title="Reconocimiento Facial con PCA", page_icon="👤", layout="centered")
+app = Flask(__name__)
+# Límite de 5MB para las fotos que se suban como pide la rúbrica
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024 
 
-st.title("Reconocimiento Facial y Reconstrucción con PCA")
-st.write("Proyecto de Álgebra Lineal: Espacios vectoriales aplicados a rostros.")
+# Variables globales para almacenar el modelo entrenado
+X, y_labels, nombres_clases = None, None, None
+Xc, mu, lam, V = None, None, None, None
 
-# Configuración de resolución
-IMG_HEIGHT, IMG_WIDHT = 128, 128
-channels = 3
+@app.before_first_request
+def inicializar_modelo():
+    """Ejecuta el entrenamiento PCA una sola vez al iniciar el servidor."""
+    global X, y_labels, nombres_clases, Xc, mu, lam, V
+    X, y_labels, nombres_clases = io_datos.cargar_entrenamiento()
+    
+    if X is not None and len(X) > 0:
+        # Paso 2, 3 y 4: Calcular variables usando tu archivo pca.py
+        Xc, mu = pca.centrar(X)
+        lam, V = pca.espectro(Xc)
 
-# Sección de subida de archivos en la web
-st.sidebar.header("1. Cargar Dataset")
-uploaded_mias = st.sidebar.file_uploader("Sube tus fotos (Tú)", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
-uploaded_otras = st.sidebar.file_uploader("Sube fotos de otra persona", type=['png', 'jpg', 'jpeg'], accept_multiple_files=True)
+@app.route("/")
+def index():
+    """Ruta principal que muestra la página web."""
+    # Aquí pasaremos variables a la plantilla HTML para que escribas tus "notas"
+    return render_template("index.html")
 
-if uploaded_mias and uploaded_otras:
-    images_list = []
-    y_labels_list = []
-    
-    # Procesar fotos tuyas (Etiqueta 1)
-    for file in uploaded_mias:
-        img = Image.open(file).convert('RGB').resize((IMG_WIDHT, IMG_HEIGHT))
-        images_list.append(np.array(img, dtype=np.float32) / 255.0)
-        y_labels_list.append(1)
-        
-    # Procesar fotos de otros (Etiqueta 0)
-    for file in uploaded_otras:
-        img = Image.open(file).convert('RGB').resize((IMG_WIDHT, IMG_HEIGHT))
-        images_list.append(np.array(img, dtype=np.float32) / 255.0)
-        y_labels_list.append(0)
-        
-    X_images = np.array(images_list)
-    y_labels = np.array(y_labels_list)
-    n_samples = X_images.shape[0]
-    X = X_images.reshape(n_samples, -1)
-    
-    # Aplicar PCA y KNN
-    max_comp = min(n_samples - 1, 30) if n_samples > 1 else 1
-    if max_comp < 1: max_comp = 1
-    
-    pca_full = PCA(n_components=max_comp, svd_solver='full').fit(X)
-    X_transformed = pca_full.transform(X)
-    
-    knn = KNeighborsClassifier(n_neighbors=3)
-    knn.fit(X_transformed, y_labels)
-    
-    st.sidebar.success(f"¡Modelo entrenado con {n_samples} imágenes!")
-    
-    # --- SECCIÓN 2: EL DESLIZADOR INTERACTIVO ---
-    st.header("2. Reconstrucción de Imágenes con PCA")
-    st.write("Mueve el deslizador para ver cómo la imagen recupera nitidez al sumar componentes principales.")
-    
-    indice_foto = st.slider("Selecciona el ID de la foto", 0, n_samples - 1, 0)
-    num_componentes = st.slider("Número de Componentes Principales", 1, max_comp, min(5, max_comp))
-    
-    # Reconstrucción matemática
-    reconstruida_plana = np.dot(X_transformed[indice_foto, :num_componentes], 
-                                pca_full.components_[:num_componentes, :]) + pca_full.mean_
-    reconstruida = reconstruida_plana.reshape((IMG_HEIGHT, IMG_WIDHT, channels))
-    reconstruida = np.clip(reconstruida, 0, 1)
-    
-    # Mostrar imágenes lado a lado
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader(f"Original #{indice_foto}")
-        st.image(X_images[indice_foto], use_column_width=True)
-        
-    with col2:
-        st.subheader(f"Reconstruida ({num_componentes} comp.)")
-        st.image(reconstruida, use_column_width=True)
-        
-    # --- SECCIÓN 3: IDENTIFICADOR DE ROSTROS ---
-    st.header("3. Identificador de Identidad")
-    st.write("Haz clic en el botón para evaluar si el sistema reconoce la foto seleccionada.")
-    
-    if st.button("Verificar Identidad"):
-        vector_prueba = X[indice_foto].reshape(1, -1)
-        vector_reducido = pca_full.transform(vector_prueba)
-        prediccion = knn.predict(vector_reducido)
-        
-        if prediccion[0] == 1:
-            st.success("Resultado: ¡SÍ ERES TÚ! ✅")
-        else:
-            st.error("Resultado: NO ERES TÚ ❌")
-else:
-    st.info("👈 Por favor, sube tus fotos y las de otra persona en la barra lateral para empezar.")
+@app.route("/identify", methods=["POST"])
+def identify():
+    """Paso 7 y 8: Recibe la foto de prueba y la identifica."""
+    # (El código para procesar la foto y comparar irá aquí)
+    pass
+
+@app.route("/reconstruct")
+def reconstruct():
+    """Actualiza la reconstrucción cuando muevas el deslizador de k."""
+    k = int(request.args.get('k', 1))
+    # (El código de reconstrucción irá aquí)
+    pass
+
+if __name__ == "__main__":
+    # Nunca ejecutar con debug=True fuera del equipo local según la rúbrica
+    app.run(debug=False, port=5000)
