@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Identificador con PCA</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+        .paso { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .nota { background-color: #f9f9f9; padding: 10px; border-left: 4px solid #0056b3; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Proyecto: Identificador de Imágenes con PCA</h1>
+
+    <div class="paso"><h2>Mateo Muñiz Roquet | Álgebra Lineal Avanzada</h2>
+    </div>
+
+<div class="paso">
+    <h2>Paso 1. Conjunto de entrenamiento y matriz X</h2>
+    
+    <div class="nota">
+        <strong>Notas: </strong>
+        <ul>
+            <li><strong>(a) ¿Qué se hace?</strong> Se cargan las fotografías de la galería de entrenamiento, se convierten a escala de grises y se redimensionan a 64 x 64 píxeles. Luego, cada imagen se "aplana" en un vector fila para construir la matriz de datos <em>X</em>.</li>
+            <li><strong>(b) ¿Por qué se hace?</strong> En el análisis multivariado, cada rostro debe fungir como una observación independiente y cada píxel como una variable. El recorte y redimensionamiento garantizan la alineación espacial, de modo que la columna <em>j</em> mida la misma región anatómica en todas las observaciones. La escala de grises reduce la dimensionalidad espacial, conservando la estructura de contraste y facilitando el cálculo de la covarianza.</li>
+            <li><strong>(c) Dimensiones involucradas:</strong> Al procesar imágenes de entrenamiento de 64 x 64 píxeles, obtenemos las variables por observación. La matriz de datos estructurada consolida estas dimensiones (<em>X</em> &isin; &reals;<sup><i>m</i> &times; <i>p</i></sup>).</li>
+            <li><strong>(d) Observación e interpretación:</strong> El resultado es un espacio tabular de alta dimensionalidad que consolida todas las clases (identidades) de entrenamiento. Esta matriz estructurada permite evaluar posteriormente la dependencia lineal y extraer las direcciones de máxima varianza entre los píxeles de las imágenes.</li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>1. Representación de las filas y columnas de la matriz <i>X</i></h3>
+        <p>En la construcción del modelo, la base de datos de imágenes se transforma en una matriz matemática denotada como <i>X</i> &isin; &reals;<sup><i>m</i> &times; <i>p</i></sup>. En esta estructura, cada fila de la matriz corresponde a una imagen individual del conjunto de entrenamiento previamente "aplanada" (convertida en un vector fila). Por su parte, cada columna representa un píxel específico en una coordenada exacta de la cuadrícula de la imagen.</p>
+
+        <h3>2. Las imágenes como observaciones y los píxeles como variables</h3>
+        <p>Desde la perspectiva del análisis estadístico multivariado y el aprendizaje automático, cada rostro fotografiado constituye una "observación" independiente (un sujeto o muestra única dentro de nuestro espacio de datos). Por otro lado, cada píxel se comporta como una "variable" o característica medible, ya que su valor numérico (la intensidad de luz) varía de una fotografía a otra. El Análisis de Componentes Principales (PCA) se encarga precisamente de estudiar la covarianza y la correlación entre estas miles de variables a lo largo de todas las observaciones.</p>
+
+        <h3>3. Justificación del preprocesamiento (Escala de grises, tamaño y recorte)</h3>
+        <p>El acondicionamiento previo de las imágenes es un requisito matemático ineludible por las siguientes razones:</p>
+        <ul>
+            <li><strong>Escala de grises:</strong> Se seleccionó para reducir drásticamente la dimensionalidad computacional. Al pasar de tres canales de color (RGB) a un solo canal de intensidad luminosa, se conserva la información geométrica, estructural y de contraste de los rostros eliminando el ruido o la redundancia que aporta el color.</li>
+            <li><strong>Tamaño estandarizado:</strong> Fue necesario redimensionar todas las fotografías para asegurar que los vectores resultantes tuvieran exactamente la misma longitud dimensional. Sin este paso, sería algebraicamente imposible apilar las observaciones para construir una matriz <i>X</i> uniforme.</li>
+            <li><strong>Recorte y centrado:</strong> El recorte asegura la alineación espacial de los rostros. Para que el cálculo de la varianza sea válido, un píxel en una coordenada específica debe corresponder a la misma región anatómica en todas las fotos.</li>
+        </ul>
+
+        <h3>4. Dimensiones obtenidas (<i>m</i> y <i>p</i>)</h3>
+        <p>Al aplicar este preprocesamiento a nuestra galería, se obtuvo una matriz con los siguientes valores reales:</p>
+        <ul>
+            <li><i>m</i> = <span id="val-m">39</span>: Representa el número total de observaciones procesadas.</li>
+            <li><i>p</i> = <span id="val-p">4096</span>: Representa el número total de variables, resultado de aplanar las imágenes de 64 &times; 64 píxeles (64 x 64 = 4096).</li>
+        </ul>
+        
+	<div style="margin-top: 15px;">
+        <h3>Resumen de Clases (Identidades) en el modelo:</h3>
+        <ul id="lista-clases-dinamica" style="list-style-type: disc; margin-left: 20px;">
+            <!-- JavaScript llenará esto automáticamente -->
+        </ul>
+    </div>
+</div>
+</div>
+
+<div class="paso">
+    <h2>Paso 2. Centrado de los datos</h2>
+    
+    <div class="nota">
+        <strong>Notas: </strong>
+        <ul>
+            <li><strong>(a) ¿Qué se hace?</strong> Se calcula el vector promedio &mu; de las observaciones y se le resta a la matriz original para obtener la matriz centrada <em>X<sub>c</sub> = X - 1&mu;<sup>T</sup></em>.</li>
+            <li><strong>(b) ¿Por qué se centra (geometría)?</strong> Geométricamente, esta resta traslada rígidamente toda la nube de <em>m</em> puntos en el espacio multidimensional para que su centro de gravedad coincida exactamente con el origen (0,0,...,0). Esto es crucial porque el algoritmo PCA busca rotar los ejes alrededor del origen para maximizar la varianza. Si no se centra, el primer componente principal solo apuntaría hacia la media de los datos en lugar de capturar la dirección real de mayor dispersión.</li>
+            <li><strong>(c) ¿Por qué cada columna de X<sub>c</sub> tiene media cero?</strong> Porque a cada variable (columna de la matriz) se le restó exactamente su propio valor promedio. Algebraicamente, la suma de las desviaciones de cualquier conjunto de datos respecto a su propia media siempre es cero.</li>
+            <li><strong>(d) ¿Por qué la imagen de prueba usa la &mu; del entrenamiento?</strong> El espacio de componentes principales (nuestro modelo) se construyó tomando como "origen" el rostro promedio del entrenamiento. Si a una foto nueva le restamos su propia media (que es solo un número), la estaríamos trasladando a un sistema de coordenadas distinto, lo que invalidaría la proyección y el cálculo de la distancia con las otras caras.</li>
+        </ul>
+    </div>
+
+    <!-- imagen de la media -->
+    <div style="margin-top: 20px; text-align: center;">
+        <h3>Imagen Media (&mu;) del Entrenamiento</h3>
+        <p>Esta imagen es el "rostro promedio" obtenido de combinar todas las fotografías de la galería.</p>
+        <img id="vista-media" src="" style="width: 200px; height: 200px; object-fit: cover; border: 2px solid #333; border-radius: 5px; display: none;">
+    </div>
+</div>
+	
+<div class="paso">
+    <h2>Paso 3. Matriz de covarianza (o de Gram)</h2>
+    
+    <div class="nota">
+        <strong>Notas: </strong>
+        <ul>
+            <li><strong>(a) ¿Qué se hace?</strong> Se calcula la matriz de covarianza tradicional <em>C</em> o, cuando el número de variables supera al de observaciones (<em>p > m</em>), se calcula la matriz de Gram <em>G = X<sub>c</sub> X<sub>c</sub><sup>T</sup></em>. Además, se verifica numéricamente que dicha matriz sea simétrica.</li>
+            <li><strong>(b) ¿Por qué se hace y fundamento matemático?</strong> Calcular la covarianza de los píxeles directamente generaría una matriz gigantesca e incosteable computacionalmente de 4096 x 4096. Al usar la matriz de Gram (de <em>m x m</em>), optimizamos el cálculo algebraico. Es una matriz <em>simétrica</em> porque sus elementos reflejados en la diagonal son iguales, y <em>semidefinida positiva</em> porque todos sus valores propios son mayores o iguales a cero, lo cual es obligatorio ya que representan varianzas (energía de dispersión).</li>
+            <li><strong>(c) Dimensiones involucradas:</strong> La matriz de covarianza completa <em>C</em> tendría dimensiones de 4096 x 4096. Sin embargo, al emplear el enfoque de la matriz de Gram <em>G</em>, obtenemos una dimensión reducida y manejable de 36 x 36 (basada en las <em>m = 36</em> observaciones). El rango de esta matriz está acotado estrictamente a ser menor o igual a <em>m - 1</em> (máximo 35).</li>
+            <li><strong>(d) Observación e interpretación:</strong> Se observa que, aunque <em>C</em> y <em>G</em> operan en espacios dimensionales distintos, ambas comparten exactamente los mismos valores propios no nulos. Esto permite extraer el espectro energético real del sistema de forma eficiente sin saturar la memoria del equipo.</li>
+        </ul>
+    </div>
+
+    <!-- mapa de calor para gram -->
+<div style="margin-top: 20px; text-align: center;">
+        <h3>Visualización de la Matriz de Gram (Mapa de Calor)</h3>
+        <p>Los bloques diagonales más intensos representan la alta correlación entre las imágenes de una misma clase (identidad).</p>
+        <img id="vista-gram" src="" style="max-width: 350px; border: 2px solid #333; border-radius: 5px; display: none;">
+    </div>
+</div>
+
+<div class="paso">
+    <div class="paso">
+    <h2>Paso 4. Valores y vectores propios</h2>
+    
+    <div class="nota">
+        <strong>Notas: </strong>
+        <ul>
+	<h3>(a) ¿Qué se hace en este paso?</h3> 
+        Se calculan los valores propios (&lambda;<sub>i</sub>) y vectores propios a partir de la matriz de Gram <em>G</em>. Se ordenan de mayor a menor (invirtiendo el orden de <em>eigh</em>) y se truncan a cero los valores microscópicamente negativos que surgen por el error numérico de punto flotante de la computadora.</li>
+
+        <h3>(b) ¿Por qué se hace? (Fundamento matemático)</h3> 
+        Se hace para encontrar las "eigenfaces" o componentes principales. Matemáticamente, los valores propios miden la "energía" o varianza que captura cada componente. Se exige que los vectores propios sean ortogonales (V<sup>T</sup> V ≈ I) para garantizar que cada uno capture características geométricas independientes sin redundancia de información.</li>
+
+        <h3>(c) Dimensiones de los objetos involucrados:</h3> 
+        Al tener <em>m = 36</em> imágenes con <em>p = 4096</em> píxeles (64x64), la matriz <em>G</em> es de 36 x 36. Esto nos arroja 36 valores propios, de los cuales a lo más <em>m - 1 = 35</em> son verdaderamente útiles. Al proyectar los vectores de <em>G</em> al espacio original, nuestra matriz de vectores propios finales <em>V</em> queda con dimensiones de 4096 x 36.</li>
+
+        <h3>(d) ¿Qué se observa en el resultado y cómo se interpreta?</h3> 
+        En la tabla del espectro se observa que el primer valor propio (&lambda;<sub>1</sub>) es inmensamente grande y los siguientes decaen de forma drástica. Esto se interpreta como que la mayor parte de la información estructural de los rostros (iluminación, contornos base) se concentra en los primeros componentes, lo que nos permitirá reconstruir e identificar rostros usando muy pocas dimensiones en lugar de las 4096 originales.</li>
+    </ul>
+            <li><strong>1. ¿Qué es exactamente el valor propio (&lambda;<sub>i</sub>)?:</strong>
+            &lambda;<sub>i</sub> es el "nivel de importancia" o la "energía" que tiene un patrón facial específico (eigenface). Un valor propio muy grande significa que esa característica varía mucho entre todas las fotos y es clave para distinguir a una persona. Si el valor es cercano a cero, ese patrón casi no aporta información útil.</li>
+
+            <li><strong>2. ¿Por qué los vectores propios son ortogonales?:</strong>
+            En álgebra lineal, que sean ortogonales (V<sup>T</sup> V ≈ I) significa que capturan información completamente independiente. Si el primer vector ya capturó el tono de la foto, el segundo capturará algo totalmente distinto, garantizando que el sistema no procese datos repetidos o redundantes.</li>
+
+            <li><strong>3. ¿Por qué los ordenamos al revés?:</strong>
+            La función matemática que usamos (<em>eigh</em>) calcula estos valores de menor a mayor por defecto. Sin embargo, a nosotros nos interesan primero las características más importantes (los valores propios más grandes) para comprimir la imagen sin perder calidad, por lo que invertimos la lista.</li>
+
+            <li><strong>4. ¿Por qué solo hay a lo más m - 1 valores propios útiles?:</strong>
+            Aunque cada foto tiene 4096 píxeles, solo tenemos un total de "m" fotografías de entrenamiento. Geométricamente, con "m" observaciones solo se pueden trazar m - 1 direcciones de diferencia independientes entre ellas. El resto de las dimensiones no generan información nueva.</li>
+
+            <li><strong>5. ¿Por qué salen valores negativos por "error numérico"?:</strong>
+            En la realidad, una varianza nunca puede ser negativa. Sin embargo, al hacer millones de multiplicaciones con decimales infinitos, el procesador sufre pequeños errores de redondeo. Así, un cero perfecto a veces es calculado como un número microscópicamente negativo.</li>
+        </ul>
+    </div>
+
+    <!-- tabla para mostrar los valores propios -->
+    <div style="margin-top: 20px;">
+        <h3>Espectro de Valores Propios (&lambda;<sub>i</sub>)</h3>
+        <p>Valores propios ordenados de mayor a menor importancia:</p>
+        <div style="max-height: 220px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #ddd; padding: 8px;">Componente (k)</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Valor Propio (&lambda;<sub>k</sub>)</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-vp">
+                    <!-- Se llena dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="paso">
+
+    <h2>Paso 6. Varianza Explicada y Acumulada</h2>
+    <div class="nota">
+        <strong>Nota Explicativa y Tabla de Varianza (35 Componentes):</strong>
+        <p>A continuación se muestra la acumulación de la varianza P(k) para cada uno de los componentes principales válidos:</p>
+        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; margin-top: 10px;">
+            <table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
+                <thead>
+                    <tr style="background-color: #f2f2f2; position: sticky; top: 0;">
+                        <th>Componente (k)</th>
+                        <th>Varianza Individual (%)</th>
+                        <th>Varianza Acumulada P(k) (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-varianza">
+                    <!-- Se llenará automáticamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Pasos 7 y 8 interactivos -->
+    <div class="paso">
+        <h2>Pasos 7 y 8. Identificación Interactiva</h2>
+        <div class="nota"><strong>Nota Explicativa:</strong> placeholder todavía no acabo las notas.</div>
+        
+        <h3>1. Subir Foto de Prueba y Comparación</h3>
+        <input type="file" id="input-foto" accept="image/png, image/jpeg, image/jpg">
+        <button id="btn-enviar">Analizar Imagen</button>
+        
+        <br><br>
+        <!-- Contenedor visual para poner original y reconstruida lado a lado -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div>
+                <p><strong>Imagen Original:</strong></p>
+                <img id="vista-previa" style="max-width: 200px; display: none; border: 2px solid #ccc; border-radius: 5px;">
+            </div>
+            <div>
+                <p><strong>Imagen Reconstruida:</strong></p>
+                <img id="vista-reconstruida" style="width: 200px; height: 200px; object-fit: cover; display: none; border: 2px solid #0056b3; border-radius: 5px;">
+            </div>
+        </div>
+        
+        <h3>2. Resultados</h3>
+        <p><strong>Clase asignada:</strong> <span id="resultado-clase">---</span></p>
+        
+        <h3>3. Ajustar Componentes (k)</h3>
+        <input type="range" id="slider-k" min="1" max="15" value="1" oninput="actualizarK(this.value)">
+        <p>Valor de k: <span id="valor-k">1</span></p>
+        <p><strong>Varianza acumulada P(k):</strong> <span id="varianza-acumulada">---</span>%</p>
+        <p><strong>Error de reconstrucción e(k):</strong> <span id="error-recon">---</span></p>
+    </div>
+
+<script>
+    // 1. Mostrar vista previa de la foto seleccionada localmente
+    document.getElementById('input-foto').addEventListener('change', function(event) {
+        const archivo = event.target.files[0];
+        if (archivo) {
+            const url = URL.createObjectURL(archivo);
+            const imgPrev = document.getElementById('vista-previa');
+            imgPrev.src = url;
+            imgPrev.style.display = 'block';
+        }
+    });
+
+    // 2. Enviar foto al servidor al hacer clic en Analizar
+    document.getElementById('btn-enviar').addEventListener('click', () => {
+        const inputFoto = document.getElementById('input-foto');
+        if (inputFoto.files.length === 0) {
+            alert("Por favor selecciona una imagen primero.");
+            return;
+        }
+        
+        const kActual = document.getElementById('slider-k').value;
+        const formData = new FormData();
+        formData.append('foto', inputFoto.files[0]);
+        formData.append('k', kActual);
+        
+        fetch('/identify', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                const elementoResultado = document.getElementById('resultado-clase');
+
+		if (data.clase.includes("Desconocido")) {
+    	// Si la distancia supera el umbral
+    		elementoResultado.innerHTML = `La foto que subiste <strong>NO corresponde</strong> a ninguna categoría registrada.`;
+    		elementoResultado.style.color = "#d9534f"; // Rojo
+	} else {
+    	// Si la distancia es aceptable y encuentra coincidencia
+    		elementoResultado.innerHTML = `La foto que subiste <strong>SÍ corresponde a: ${data.clase}</strong>`;
+    		elementoResultado.style.color = "#5cb85c"; // Verde
+	}
+                document.getElementById('slider-k').max = data.max_k;
+                document.getElementById('varianza-acumulada').innerText = data.varianza.toFixed(2);
+                document.getElementById('error-recon').innerText = data.error.toFixed(2);
+                
+                // Mostrar la imagen reconstruida devuelta por el servidor
+                if (data.imagen_reconstruida) {
+                    document.getElementById('vista-reconstruida').src = "data:image/jpeg;base64," + data.imagen_reconstruida;
+                    document.getElementById('vista-reconstruida').style.display = 'block';
+                }
+            })
+            .catch(err => console.error("Error en identify:", err));
+    });
+
+    // 3. Actualizar datos e imagen en tiempo real al mover el deslizador
+    function actualizarK(k) {
+        document.getElementById('valor-k').innerText = k;
+        fetch(`/reconstruct?k=${k}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('varianza-acumulada').innerText = data.varianza.toFixed(2);
+                document.getElementById('error-recon').innerText = data.error.toFixed(2);
+                
+                // Actualizar la imagen reconstruida al cambiar k
+                if (data.imagen_reconstruida) {
+                    document.getElementById('vista-reconstruida').src = "data:image/jpeg;base64," + data.imagen_reconstruida;
+                    document.getElementById('vista-reconstruida').style.display = 'block';
+                }
+
+                if (data.clase && data.clase !== "---") {
+                    document.getElementById('resultado-clase').innerText = data.clase;
+                }
+            })
+            .catch(error => console.error('Error al actualizar k:', error));
+    }
+
+    // 4. Cargar la tabla de varianza automáticamente al iniciar
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('/tabla_varianza')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('cuerpo-tabla-varianza');
+                tbody.innerHTML = "";
+                data.forEach(fila => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${fila.k}</td>
+                        <td>${fila.individual.toFixed(2)}%</td>
+                        <td>${fila.acumulada.toFixed(2)}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error("Error al cargar la tabla de varianza:", err));
+
+        // 5. Cargar información de la galería para el Paso 1
+        fetch('/info_galeria')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('val-m').innerText = data.m;
+                document.getElementById('val-p').innerText = data.p;
+                
+                const ulClases = document.getElementById('lista-clases-dinamica');
+                ulClases.innerHTML = "";
+                
+                for (const [nombre, cantidad] of Object.entries(data.clases)) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Clase <strong>${nombre}</strong>: ${cantidad} imágenes`;
+                    ulClases.appendChild(li);
+                }
+            })
+            .catch(err => console.error("Error al cargar info de galería:", err));
+
+        // 6. Cargar la imagen media (Paso 2)
+        fetch('/imagen_media')
+            .then(response => response.json())
+            .then(data => {
+                if (data.imagen_media) {
+                    const imgMedia = document.getElementById('vista-media');
+                    imgMedia.src = "data:image/jpeg;base64," + data.imagen_media;
+                    imgMedia.style.display = 'inline-block';
+                }
+            })
+            .catch(err => console.error("Error al cargar la imagen media:", err));
+
+        // 7. Cargar la imagen de la Matriz de Gram (Paso 3)
+        fetch('/imagen_gram')
+            .then(response => response.json())
+            .then(data => {
+                if (data.imagen_gram) {
+                    const imgGram = document.getElementById('vista-gram');
+                    imgGram.src = "data:image/jpeg;base64," + data.imagen_gram;
+                    imgGram.style.display = 'inline-block';
+                }
+            })
+            .catch(err => console.error("Error al cargar la matriz de Gram:", err));
+    });
+	// 8. Cargar la tabla de valores propios (Paso 4)
+        fetch('/valores_propios')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('cuerpo-tabla-vp');
+                if (tbody) {
+                    tbody.innerHTML = "";
+                    data.forEach(fila => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${fila.k}</td>
+                            <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${fila.lambda.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            })
+            .catch(err => console.error("Error al cargar valores propios:", err));
+</script>
+
+</body>
+</html>
