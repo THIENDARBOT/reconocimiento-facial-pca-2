@@ -36,7 +36,7 @@ python3 -m venv entorno_video |
  source entorno_video/bin/activate
 
 ### 2. Navega hasta la carpeta raíz del proyecto.
-### 3. Ejecutar el commando pip install -r requirements.txt
+### 3. Ejecutar el comando pip install -r requirements.txt
 ### 4. Inicia el servidor ejecutando: python app.py (Este proceso puede tardar un minuto)
 ### 5. Una vez inicializado, dirígete en el navegador a la dirección **http://127.0.0.1:5000/** para interactuar con la página.
 
