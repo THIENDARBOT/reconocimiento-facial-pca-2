@@ -17,18 +17,28 @@ Extrae los archivos del proyecto en una carpeta local.
 
 El proyecto está construido con Flask y se ejecuta de forma local.
 
-1. Abre una terminal y navega hasta la carpeta raíz del proyecto utilizando el comando cd y pegando la dirección de la carpeta raíz.
-2. Ejecutar el commando pip install -r requirements.txt
-3. Inicia el servidor ejecutando: python app.py (Este proceso puede llevar un minuto)
+## Ejecución
 
+El proyecto está construido con Flask y se ejecuta de forma local. Sigue estos pasos según tu sistema operativo:
 
+### 1. Crear y activar el entorno virtual
 
-4\.  Abre tu navegador web y dirígete a la siguiente dirección para interactuar con la interfaz:
-    **http://127.0.0.1:5000/**
+* **En Windows (PowerShell):**
+  python -m venv entorno_video
+  entorno_video\Scripts\Activate.ps1
+  
+* **En Windows (CMD):**
+python -m venv entorno_video
+entorno_video\Scripts\activate.bat
 
+* **En macOS o Linux:**
+python3 -m venv entorno_video
+source entorno_video/bin/activate
 
-
-
+2. Navega hasta la carpeta raíz del proyecto.
+3. Ejecutar el commando pip install -r requirements.txt
+4. Inicia el servidor ejecutando: python app.py (Este proceso puede tardar un minuto)
+5. Una vez inicializado, dirígete en el navegador a la dirección **http://127.0.0.1:5000/** para interactuar con la página.
 
 ## Conjunto de Datos
 
