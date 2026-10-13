@@ -23,14 +23,11 @@ El proyecto está construido con Flask y se ejecuta de forma local. Sigue estos 
 
 ### 1. Crear y activar el entorno virtual
 
-* **En Windows (PowerShell):**
+* **En Windows (CMD):**
   python -m venv entorno_video |
+   Set-ExecutionPolicy Unrestricted -Scope Process |
    entorno_video\Scripts\Activate.ps1
   
-* **En Windows (CMD):**
-python -m venv entorno_video |
- entorno_video\Scripts\activate.bat
-
 * **En macOS o Linux:**
 python3 -m venv entorno_video |
  source entorno_video/bin/activate
