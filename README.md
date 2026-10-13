@@ -19,7 +19,7 @@ El proyecto está construido con Flask y se ejecuta de forma local.
 
 1. Abre una terminal y navega hasta la carpeta raíz del proyecto utilizando el comando cd y pegando la dirección de la carpeta raíz.
 2. Ejecutar el commando pip install -r requirements.txt
-3. Inicia el servidor ejecutando: python app.py
+3. Inicia el servidor ejecutando: python app.py (Este proceso puede llevar un minuto)
 
 
 
