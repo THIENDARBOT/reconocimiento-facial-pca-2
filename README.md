@@ -24,16 +24,16 @@ El proyecto está construido con Flask y se ejecuta de forma local. Sigue estos 
 ### 1. Crear y activar el entorno virtual
 
 * **En Windows (PowerShell):**
-  python -m venv entorno_video
-  entorno_video\Scripts\Activate.ps1
+  python -m venv entorno_video |
+   entorno_video\Scripts\Activate.ps1
   
 * **En Windows (CMD):**
-python -m venv entorno_video
-entorno_video\Scripts\activate.bat
+python -m venv entorno_video |
+ entorno_video\Scripts\activate.bat
 
 * **En macOS o Linux:**
-python3 -m venv entorno_video
-source entorno_video/bin/activate
+python3 -m venv entorno_video |
+ source entorno_video/bin/activate
 
 2. Navega hasta la carpeta raíz del proyecto.
 3. Ejecutar el commando pip install -r requirements.txt
