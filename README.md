@@ -11,12 +11,6 @@ Para ejecutar este proyecto de manera local, asegúrate de tener instalado Pytho
 1. **Clonar o descargar el repositorio:**
 Extrae los archivos del proyecto en una carpeta local.
 
-## 
-
-## Ejecución
-
-El proyecto está construido con Flask y se ejecuta de forma local.
-
 ## Ejecución
 
 El proyecto está construido con Flask y se ejecuta de forma local. Sigue estos pasos según tu sistema operativo:
