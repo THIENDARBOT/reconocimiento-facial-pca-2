@@ -20,11 +20,11 @@ El proyecto está construido con Flask y se ejecuta de forma local. Sigue estos 
 * **En Windows (CMD):**
   python -m venv entorno_pca |
    Set-ExecutionPolicy Unrestricted -Scope Process |
-   entorno_video\Scripts\Activate.ps1
+   entorno_pca\Scripts\Activate.ps1
   
 * **En macOS o Linux:**
 python3 -m venv entorno_pca |
- source entorno_video/bin/activate
+ source entorno_pca/bin/activate
 
 ### 2. Navega hasta la carpeta raíz del proyecto.
 ### 3. Ejecutar el comando pip install -r requirements.txt
